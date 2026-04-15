@@ -55,9 +55,18 @@ def model_predict(data: ModelPredictData, background_tasks: BackgroundTasks):
 
 @router.post("/feedback")
 def model_feedback(data: ModelFeedbackData):
-    # Todo:
-    ## check prediction_id
+    # Il controllo che data.label sia valido viene fatto nel validator di ModelFeedbackData
 
+    inference_log = services.get_inference_log_by_prediction_id(data.prediction_id)
+    # Controllo se il prediction_id esiste e se non ha già un feedback associato
+    if inference_log is not None and inference_log.feedback is None:
+        # Salvo il feedback solo se il prediction_id è valido e non ha già un feedback associato
+        services.create_feedback(
+            prediction_id = data.prediction_id,
+            true_label = data.label
+        )
+
+    # Ritorno un messaggio di ringraziamento per il feedback, indipendentemente dal fatto che il prediction_id sia valido o meno
     return ModelFeedbackResponse(
         status = "feedback accepted",
         message = "Thank you for you feedback",
