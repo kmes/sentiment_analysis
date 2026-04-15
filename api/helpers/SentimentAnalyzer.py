@@ -12,6 +12,9 @@ class SentimentAnalyzer:
     def model_loaded(self) -> bool:
         return self.classifier is not None
 
+    def unload_model(self):
+        self.classifier = None
+
     def predict(self, text: str) -> tuple[str, float]:
         result = self.classifier(text)[0]
         label = result['label']

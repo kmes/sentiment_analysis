@@ -1,20 +1,20 @@
-from fastapi import APIRouter, Depends, BackgroundTasks
+from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from dependencies import analyzer, timer
 from schemas import BaseResponse, ModelLabelsResponse, ModelPredictData, ModelPredictResponse, ModelFeedbackData, ModelFeedbackResponse
 
 from db import services
+from db.database import get_db
 
 import uuid
 
 def check_model_loaded():
     if not analyzer.model_loaded():
-        return BaseResponse(
-            status = "Model not loaded",
-            message = "Please load model before"
+        raise HTTPException(
+            status_code=503,
+            detail="Model not loaded. Please load the model before making requests."
         )
-    else:
-        yield
 
 router = APIRouter(prefix="/model", dependencies=[Depends(check_model_loaded)])
 
@@ -46,7 +46,8 @@ def model_predict(data: ModelPredictData, background_tasks: BackgroundTasks):
 
     return ModelPredictResponse(
         status = "predicted",
-        msg = f"Result {label} with {score:.2f} of confidence",
+        message = f"Result {label} with {score:.2f} of confidence",
+        text = data.text,
         prediction_id = prediction_id,
         label = label,
         score = score,
@@ -54,14 +55,14 @@ def model_predict(data: ModelPredictData, background_tasks: BackgroundTasks):
     )
 
 @router.post("/feedback")
-def model_feedback(data: ModelFeedbackData):
+async def model_feedback(data: ModelFeedbackData):
     # Il controllo che data.label sia valido viene fatto nel validator di ModelFeedbackData
 
-    inference_log = services.get_inference_log_by_prediction_id(data.prediction_id)
+    inference_log = await services.get_inference_log_by_prediction_id(data.prediction_id)
     # Controllo se il prediction_id esiste e se non ha già un feedback associato
     if inference_log is not None and inference_log.feedback is None:
         # Salvo il feedback solo se il prediction_id è valido e non ha già un feedback associato
-        services.create_feedback(
+        await services.create_feedback(
             prediction_id = data.prediction_id,
             true_label = data.label
         )

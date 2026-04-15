@@ -41,25 +41,25 @@ async def save_inference_log_background(
         await session.commit()
 
 async def get_inference_log_by_prediction_id(
-    session: AsyncSession,
     prediction_id: uuid.UUID,
 ) -> InferenceLog | None:
-    result = await session.execute(
-        select(InferenceLog)
-        .where(InferenceLog.prediction_id == prediction_id)
-        .options(selectinload(InferenceLog.feedback))
-    )
-    return result.scalar_one_or_none()
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(
+            select(InferenceLog)
+            .where(InferenceLog.prediction_id == prediction_id)
+            .options(selectinload(InferenceLog.feedback))
+        )
+        return result.scalar_one_or_none()
 
 async def create_feedback(
-    session: AsyncSession,
     prediction_id: uuid.UUID,
     true_label: str,
 ) -> FeedbackLog:
-    feedback = FeedbackLog(
-        prediction_id=prediction_id,
-        true_label=true_label
-    )
-    session.add(feedback)
-    await session.flush()
-    return feedback
+    async with AsyncSessionLocal() as session:
+        feedback = FeedbackLog(
+            prediction_id=prediction_id,
+            true_label=true_label
+        )
+        session.add(feedback)
+        await session.commit()
+        return feedback

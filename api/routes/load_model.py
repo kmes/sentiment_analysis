@@ -18,5 +18,21 @@ def load_model():
 
         return LoadModelResponse(
             status = "model " + ("" if analyzer.model_loaded() else "not ") + "loaded",
-            loaded_time = load_time
+            time = load_time
+        )
+
+@router.get("/unload-model")
+def unload_model():
+    if not analyzer.model_loaded():
+        return BaseResponse(
+            status = "already unloaded"
+        )
+    else:
+        timer.reset_timer()
+        analyzer.unload_model()
+        unload_time = timer.partial_timer()
+
+        return LoadModelResponse(
+            status = "model " + ("" if analyzer.model_loaded() else "not ") + "loaded",
+            time = unload_time
         )
