@@ -1,13 +1,13 @@
 from fastapi import APIRouter, Depends, BackgroundTasks
 
-from ..boostrap import analyzer, timer
-from ..schemas import BaseResponse, ModelLabelsResponse, ModelPredictData, ModelPredictResponse, ModelFeedbackData, ModelFeedbackResponse
+from dependencies import analyzer, timer
+from schemas import BaseResponse, ModelLabelsResponse, ModelPredictData, ModelPredictResponse, ModelFeedbackData, ModelFeedbackResponse
 
-from ..db import services
+from db import services
 
 import uuid
 
-async def check_model_loaded():
+def check_model_loaded():
     if not analyzer.model_loaded():
         return BaseResponse(
             status = "Model not loaded",

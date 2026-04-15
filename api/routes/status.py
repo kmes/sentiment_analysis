@@ -1,7 +1,8 @@
 from fastapi import APIRouter
 
-from ..boostrap import analyzer, timer
-from ..schemas import StatusResponse
+from dependencies import analyzer, timer
+
+from schemas import StatusResponse
 
 router = APIRouter()
 

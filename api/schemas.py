@@ -1,6 +1,6 @@
 from pydantic import BaseModel, field_validator, ValidationError
 
-from .boostrap import analyzer
+from dependencies import analyzer
 
 class BaseResponse(BaseModel):
     status: str
@@ -40,7 +40,7 @@ class ModelFeedbackData(BaseModel):
     def label_validator(cls, label: str) -> str:
         if not analyzer.validate_label(label):
             valid_labels = analyzer.get_valid_labels()
-            raise ValueError(f"Label must be {", ".jsoin(valid_labels)}")
+            raise ValueError(f"Label must be {', '.jsoin(valid_labels)}")
         return label.lower()
     
     

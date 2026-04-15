@@ -2,12 +2,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
-from db.database import engine, Base, AsyncSessionLocal
+from db.database import engine, AsyncSessionLocal
 
-from db.models import InferenceLog, FeedbackLog
+from db.models import Base, InferenceLog, FeedbackLog
 
 from contextlib import asynccontextmanager
-
 from fastapi import FastAPI
 
 import uuid

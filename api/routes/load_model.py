@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
-from ..boostrap import analyzer, timer
-from ..schemas import BaseResponse, LoadModelResponse
+from dependencies import analyzer, timer
+from schemas import BaseResponse, LoadModelResponse
 
 router = APIRouter()
 
