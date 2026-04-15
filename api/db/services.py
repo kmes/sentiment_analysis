@@ -63,3 +63,13 @@ async def create_feedback(
         session.add(feedback)
         await session.commit()
         return feedback
+
+
+async def get_all_predictions() -> list[InferenceLog]:
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(
+            select(InferenceLog)
+            .options(selectinload(InferenceLog.feedback))
+            .order_by(InferenceLog.timestamp.desc())
+        )
+        return result.scalars().all()

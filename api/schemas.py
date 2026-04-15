@@ -1,4 +1,6 @@
 from pydantic import BaseModel, field_validator, ValidationError
+from datetime import datetime
+from typing import Optional
 
 from dependencies import analyzer
 
@@ -50,3 +52,28 @@ class ModelFeedbackData(BaseModel):
 class ModelFeedbackResponse(BaseResponse):
     prediction_id: uuid.UUID
     label: str
+
+
+class FeedbackItem(BaseModel):
+    true_label: str
+    timestamp: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class PredictionItem(BaseModel):
+    prediction_id: uuid.UUID
+    timestamp: datetime
+    model_version: str
+    input_text: str
+    predicted_label: str
+    confidence: float
+    latency_ms: int
+    feedback: Optional[FeedbackItem] = None
+
+    model_config = {"from_attributes": True}
+
+
+class PredictionsListResponse(BaseResponse):
+    total: int
+    predictions: list[PredictionItem]

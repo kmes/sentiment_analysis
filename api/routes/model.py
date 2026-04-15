@@ -1,13 +1,23 @@
-from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException
+from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dependencies import analyzer, timer
-from schemas import BaseResponse, ModelLabelsResponse, ModelPredictData, ModelPredictResponse, ModelFeedbackData, ModelFeedbackResponse
+from schemas import BaseResponse, ModelLabelsResponse, ModelPredictData, ModelPredictResponse, ModelFeedbackData, ModelFeedbackResponse, PredictionsListResponse, PredictionItem
 
 from db import services
 from db.database import get_db
 
+import os
+
 import uuid
+
+def require_dev_env():
+    app_env = os.environ.get("APP_ENV", "prod")
+    if app_env.lower() != "dev":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="This endpoint is available only in the development environment."
+        )
 
 def check_model_loaded():
     if not analyzer.model_loaded():
@@ -73,6 +83,16 @@ async def model_feedback(data: ModelFeedbackData):
         message = "Thank you for you feedback",
         prediction_id = data.prediction_id,
         label = data.label
+    )
+
+
+@router.get("/predictions", dependencies=[Depends(require_dev_env)])
+async def get_predictions():
+    predictions = await services.get_all_predictions()
+    return PredictionsListResponse(
+        status = "ok",
+        total = len(predictions),
+        predictions = [PredictionItem.model_validate(p) for p in predictions]
     )
 
 
