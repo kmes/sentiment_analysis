@@ -65,17 +65,20 @@ async def create_feedback(
         return feedback
 
 
-async def get_all_predictions(page: int = 1, limit: int = 20) -> tuple[list[InferenceLog], int]:
+async def get_all_predictions(page: int = 1, limit: int = 20, only_with_feedback: bool | None = None) -> tuple[list[InferenceLog], int]:
     async with AsyncSessionLocal() as session:
-        count_result = await session.execute(select(func.count()).select_from(InferenceLog))
+        count_stmt = select(func.count()).select_from(InferenceLog)
+        stmt = select(InferenceLog).options(selectinload(InferenceLog.feedback))
+
+        if only_with_feedback is True:
+            count_stmt = count_stmt.where(InferenceLog.feedback.has())
+            stmt = stmt.where(InferenceLog.feedback.has())
+
+        count_result = await session.execute(count_stmt)
         total_items = count_result.scalar_one()
 
         offset = (page - 1) * limit
-        result = await session.execute(
-            select(InferenceLog)
-            .options(selectinload(InferenceLog.feedback))
-            .order_by(InferenceLog.timestamp.desc())
-            .offset(offset)
-            .limit(limit)
-        )
+        stmt = stmt.order_by(InferenceLog.timestamp.desc()).offset(offset).limit(limit)
+
+        result = await session.execute(stmt)
         return list(result.scalars().all()), total_items

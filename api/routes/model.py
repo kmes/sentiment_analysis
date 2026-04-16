@@ -90,9 +90,10 @@ async def model_feedback(data: ModelFeedbackData):
 @router.get("/predictions", dependencies=[Depends(require_dev_env)])
 async def get_predictions(
     page: int = Query(1, ge=1, description="Page number"),
-    limit: int = Query(20, ge=1, description="Items per page")
+    limit: int = Query(20, ge=1, description="Items per page"),
+    only_with_feedback: bool | None = Query(None, description="Filter items by feedback presence")
 ):
-    predictions, total_items = await services.get_all_predictions(page=page, limit=limit)
+    predictions, total_items = await services.get_all_predictions(page=page, limit=limit, only_with_feedback=only_with_feedback)
     total_pages = (total_items + limit - 1) // limit if limit > 0 else 0
     return PredictionsListResponse(
         status = "ok",
