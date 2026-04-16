@@ -75,5 +75,8 @@ class PredictionItem(BaseModel):
 
 
 class PredictionsListResponse(BaseResponse):
-    total: int
+    current_page: int
+    total_pages: int
+    displayed_items: int
+    total_items: int
     predictions: list[PredictionItem]

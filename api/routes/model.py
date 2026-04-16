@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException, status
+from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dependencies import analyzer, timer
@@ -77,7 +77,8 @@ async def model_feedback(data: ModelFeedbackData):
             true_label = data.label
         )
 
-    # Ritorno un messaggio di ringraziamento per il feedback, indipendentemente dal fatto che il prediction_id sia valido o meno
+    # Ritorno un messaggio di ringraziamento per il feedback, 
+    # indipendentemente dal fatto che il prediction_id sia valido o meno
     return ModelFeedbackResponse(
         status = "feedback accepted",
         message = "Thank you for you feedback",
@@ -87,11 +88,18 @@ async def model_feedback(data: ModelFeedbackData):
 
 
 @router.get("/predictions", dependencies=[Depends(require_dev_env)])
-async def get_predictions():
-    predictions = await services.get_all_predictions()
+async def get_predictions(
+    page: int = Query(1, ge=1, description="Page number"),
+    limit: int = Query(20, ge=1, description="Items per page")
+):
+    predictions, total_items = await services.get_all_predictions(page=page, limit=limit)
+    total_pages = (total_items + limit - 1) // limit if limit > 0 else 0
     return PredictionsListResponse(
         status = "ok",
-        total = len(predictions),
+        current_page = page,
+        total_pages = total_pages,
+        displayed_items = len(predictions),
+        total_items = total_items,
         predictions = [PredictionItem.model_validate(p) for p in predictions]
     )
 

@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import selectinload
 
 from db.database import engine, AsyncSessionLocal
@@ -65,11 +65,17 @@ async def create_feedback(
         return feedback
 
 
-async def get_all_predictions() -> list[InferenceLog]:
+async def get_all_predictions(page: int = 1, limit: int = 20) -> tuple[list[InferenceLog], int]:
     async with AsyncSessionLocal() as session:
+        count_result = await session.execute(select(func.count()).select_from(InferenceLog))
+        total_items = count_result.scalar_one()
+
+        offset = (page - 1) * limit
         result = await session.execute(
             select(InferenceLog)
             .options(selectinload(InferenceLog.feedback))
             .order_by(InferenceLog.timestamp.desc())
+            .offset(offset)
+            .limit(limit)
         )
-        return result.scalars().all()
+        return list(result.scalars().all()), total_items
