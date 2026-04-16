@@ -7,6 +7,10 @@ save_path = "./ml_models/twitter-roberta-sentiment"
 
 print(f"[1/4] Avvio download di: {model_name}", flush=True)
 
+if os.path.exists(os.path.join(save_path, "config.json")):
+    print(f"Modello già presente in {save_path}. Download saltato.", flush=True)
+    sys.exit(0)
+
 try:
     os.makedirs(save_path, exist_ok=True)
     print(f"[2/4] Cartella creata: {save_path}", flush=True)
