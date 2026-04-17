@@ -49,5 +49,6 @@ def unload_model():
 
         return LoadModelResponse(
             status = "model " + ("" if analyzer.model_loaded() else "not ") + "loaded",
+            model = analyzer.get_model_info(),
             time = unload_time
         )
