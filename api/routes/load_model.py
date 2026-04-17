@@ -21,13 +21,12 @@ def load_model(background_tasks: BackgroundTasks):
         analyzer.load_model(model_load_id)
         load_time = timer.partial_timer()
 
-        model_name = "sentiment_analysis_model"
         background_tasks.add_task(
             services.save_model_load_log_background,
-            model_load_id=model_load_id,
-            model_name=model_name,
-            model_version="v1.0",
-            load_time_ms=load_time
+            model_load_id = analyzer.get_model_load_id(),
+            model_name = analyzer.get_model_name(),
+            model_version = analyzer.get_model_version(),
+            load_time_ms = load_time
         )
 
         return LoadModelResponse(
