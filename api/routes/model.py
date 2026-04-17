@@ -2,29 +2,13 @@ from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException, status, 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dependencies import analyzer, timer
+from middlewares import require_dev_env, check_model_loaded
 from schemas import BaseResponse, ModelLabelsResponse, ModelPredictData, ModelPredictResponse, ModelFeedbackData, ModelFeedbackResponse, PredictionsListResponse, PredictionItem
 
 from db import services
-from db.database import get_db
-
-import os
 
 import uuid
 
-def require_dev_env():
-    app_env = os.environ.get("APP_ENV", "prod")
-    if app_env.lower() != "dev":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="This endpoint is available only in the development environment."
-        )
-
-def check_model_loaded():
-    if not analyzer.model_loaded():
-        raise HTTPException(
-            status_code=503,
-            detail="Model not loaded. Please load the model before making requests."
-        )
 
 router = APIRouter(prefix="/model", dependencies=[Depends(check_model_loaded)])
 
@@ -42,12 +26,14 @@ def model_predict(data: ModelPredictData, background_tasks: BackgroundTasks):
     label, score = analyzer.predict(data.text)
     prediction_time = timer.partial_timer()
 
+    model_load_id = analyzer.get_model_load_id()
+
     prediction_id = uuid.uuid4()
 
     background_tasks.add_task(
         services.save_inference_log_background,
         prediction_id = prediction_id,
-        model_version = "v1.0",
+        model_load_id = model_load_id,
         input_text = data.text,
         predicted_label = label,
         confidence = score,
@@ -59,6 +45,7 @@ def model_predict(data: ModelPredictData, background_tasks: BackgroundTasks):
         message = f"Result {label} with {score:.2f} of confidence",
         text = data.text,
         prediction_id = prediction_id,
+        model_load_id = model_load_id,
         label = label,
         score = score,
         prediction_time = prediction_time
@@ -85,25 +72,6 @@ async def model_feedback(data: ModelFeedbackData):
         prediction_id = data.prediction_id,
         label = data.label
     )
-
-
-@router.get("/predictions", dependencies=[Depends(require_dev_env)])
-async def get_predictions(
-    page: int = Query(1, ge=1, description="Page number"),
-    limit: int = Query(20, ge=1, description="Items per page"),
-    only_with_feedback: bool | None = Query(None, description="Filter items by feedback presence")
-):
-    predictions, total_items = await services.get_all_predictions(page=page, limit=limit, only_with_feedback=only_with_feedback)
-    total_pages = (total_items + limit - 1) // limit if limit > 0 else 0
-    return PredictionsListResponse(
-        status = "ok",
-        current_page = page,
-        total_pages = total_pages,
-        displayed_items = len(predictions),
-        total_items = total_items,
-        predictions = [PredictionItem.model_validate(p) for p in predictions]
-    )
-
 
 @router.post("/train")
 def model_train():

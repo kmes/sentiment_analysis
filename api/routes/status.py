@@ -10,6 +10,6 @@ router = APIRouter()
 def status_endopoint():
     return StatusResponse(
         status = "ok",
-        model = ("" if analyzer.model_loaded() else "not ") + "loaded",
+        model = analyzer.get_model_info(),
         uptime = timer.get_uptime()
     )

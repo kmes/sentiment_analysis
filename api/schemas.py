@@ -1,20 +1,55 @@
+from fastapi import Query
 from pydantic import BaseModel, field_validator, ValidationError
 from datetime import datetime
-from typing import Optional
+from typing import Optional, TypeVar, Generic
 
 from dependencies import analyzer
 
 import uuid
 
+class PaginationParams(BaseModel):
+    page: int = Query(1, ge=1, description="Page number")
+    limit: int = Query(20, ge=1, description="Items per page")
+
 class BaseResponse(BaseModel):
     status: str
     message: str = ""
 
+class BaseListResponse(BaseResponse):
+    current_page: int
+    total_pages: int
+    displayed_items: int
+    total_items: int
+
+T = TypeVar("T")
+class PaginatedResponse(BaseListResponse, Generic[T]):
+    items: list[T]
+
+def paginated_response_factory(items: list[T], total_items: int, params: PaginationParams) -> PaginatedResponse[T]:
+    limit = params.limit
+    total_pages = (total_items + limit - 1) // limit if limit > 0 else 0
+    
+    return PaginatedResponse[T](
+        status="ok",
+        current_page=params.page,
+        total_pages=total_pages,
+        displayed_items=len(items),
+        total_items=total_items,
+        items=items
+    )
+
+class ModelStatus(BaseModel):
+    loaded: bool
+    load_id: uuid.UUID | None
+    name: str
+    version: str
+
 class StatusResponse(BaseResponse):
-    model: str
+    model: ModelStatus
     uptime: int
 
 class LoadModelResponse(BaseResponse):
+    model: ModelStatus
     time: int
 
 class ModelLabelsResponse(BaseResponse):
@@ -25,6 +60,7 @@ class ModelPredictData(BaseModel):
 
 class ModelPredictResponse(BaseResponse):
     prediction_id: uuid.UUID
+    model_load_id: uuid.UUID
     text: str
     label: str
     score: float
@@ -63,8 +99,8 @@ class FeedbackItem(BaseModel):
 
 class PredictionItem(BaseModel):
     prediction_id: uuid.UUID
+    model_load_id: uuid.UUID
     timestamp: datetime
-    model_version: str
     input_text: str
     predicted_label: str
     confidence: float
@@ -74,9 +110,18 @@ class PredictionItem(BaseModel):
     model_config = {"from_attributes": True}
 
 
-class PredictionsListResponse(BaseResponse):
-    current_page: int
-    total_pages: int
-    displayed_items: int
-    total_items: int
+class PredictionsListResponse(BaseListResponse):
     predictions: list[PredictionItem]
+
+
+class ModelLoadLogItem(BaseModel):
+    model_load_id: uuid.UUID
+    timestamp: datetime
+    model_name: str
+    model_version: str
+    load_time_ms: int
+
+    model_config = {"from_attributes": True}
+
+
+

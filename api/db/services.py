@@ -4,7 +4,7 @@ from sqlalchemy.orm import selectinload
 
 from db.database import engine, AsyncSessionLocal
 
-from db.models import Base, InferenceLog, FeedbackLog
+from db.models import Base, InferenceLog, FeedbackLog, ModelLoadLog
 
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
@@ -22,7 +22,7 @@ async def lifespan(app: FastAPI):
 
 async def save_inference_log_background(
     prediction_id: uuid.UUID,
-    model_version: str,
+    model_load_id: uuid.UUID,
     input_text: str,
     predicted_label: str,
     confidence: float,
@@ -31,11 +31,27 @@ async def save_inference_log_background(
     async with AsyncSessionLocal() as session:
         log = InferenceLog(
             prediction_id=prediction_id,
-            model_version=model_version,
+            model_load_id=model_load_id,
             input_text=input_text,
             predicted_label=predicted_label,
             confidence=confidence,
             latency_ms=latency_ms,
+        )
+        session.add(log)
+        await session.commit()
+
+async def save_model_load_log_background(
+    model_load_id: uuid.UUID,
+    model_name: str,
+    model_version: str,
+    load_time_ms: int,
+) -> None:
+    async with AsyncSessionLocal() as session:
+        log = ModelLoadLog(
+            model_load_id=model_load_id,
+            model_name=model_name,
+            model_version=model_version,
+            load_time_ms=load_time_ms,
         )
         session.add(log)
         await session.commit()
@@ -79,6 +95,21 @@ async def get_all_predictions(page: int = 1, limit: int = 20, only_with_feedback
 
         offset = (page - 1) * limit
         stmt = stmt.order_by(InferenceLog.timestamp.desc()).offset(offset).limit(limit)
+
+        result = await session.execute(stmt)
+        return list(result.scalars().all()), total_items
+
+
+async def get_model_load_logs(page: int = 1, limit: int = 20) -> tuple[list[ModelLoadLog], int]:
+    async with AsyncSessionLocal() as session:
+        count_stmt = select(func.count()).select_from(ModelLoadLog)
+        
+        count_result = await session.execute(count_stmt)
+        total_items = count_result.scalar_one()
+
+        stmt = select(ModelLoadLog)
+        offset = (page - 1) * limit
+        stmt = stmt.order_by(ModelLoadLog.timestamp.desc()).offset(offset).limit(limit)
 
         result = await session.execute(stmt)
         return list(result.scalars().all()), total_items
