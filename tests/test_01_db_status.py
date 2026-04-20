@@ -16,6 +16,3 @@ def test_db_up():
     except Exception as e:
         print(f"FAIL: DB status test failed: {e}")
         raise e
-
-if __name__ == "__main__":
-    test_db_up()
