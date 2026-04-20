@@ -94,9 +94,19 @@ def api_status_up(model_loaded: bool | None = None):
         "required": ["status"]
     }
 
-    if model_loaded is not None:
+    if model_loaded is None:
+        json_schema["properties"]["model"] = {
+            "oneOf": [
+                get_model_json_schema(True),
+                get_model_json_schema(False)
+            ]
+        }
+        json_schema["required"].append("model")
+    elif isinstance(model_loaded, bool):
         json_schema["properties"]["model"] = get_model_json_schema(model_loaded)
         json_schema["required"].append("model")
+    else:
+        raise ValueError("model_loaded must be a boolean or None")
         
     TestEndpoint(url=url, method=method).test(status_code=200, json_schema=json_schema)
 
@@ -106,10 +116,7 @@ def api_load_model(already_loaded: bool | None = None):
     method = "GET"
     url = BASE_URL+"/load-model"
 
-    json_schema = {}
-    
-    if already_loaded is True:
-        json_schema = {
+    json_schema_model_already_loaded = {
             "type": "object",
             "properties": {
                 "status": {
@@ -122,8 +129,7 @@ def api_load_model(already_loaded: bool | None = None):
             },
             "required": ["status", "message"]
         }
-    elif already_loaded is False:
-        json_schema = {
+    json_schema_model_not_already_loaded = {
             "type": "object",
             "properties": {
                 "status": {
@@ -140,6 +146,21 @@ def api_load_model(already_loaded: bool | None = None):
             },
             "required": ["status", "message", "model", "time"]
         }
+
+    json_schema = {}
+
+    if already_loaded is None:
+        json_schema = {
+            "oneOf": [
+                json_schema_model_already_loaded,
+                json_schema_model_not_already_loaded
+            ]
+        }
+    elif already_loaded is True:
+        json_schema = json_schema_model_already_loaded
+    elif already_loaded is False:
+        json_schema = json_schema_model_not_already_loaded
+        
     TestEndpoint(url=url, method=method).test(status_code=200, json_schema=json_schema)
     
 def api_unload_model(already_unloaded: bool | None = None):

@@ -52,6 +52,10 @@ def model_predict(data: ModelPredictData, background_tasks: BackgroundTasks):
 
     prediction_id = uuid.uuid4()
 
+    # Salvo il log in background in modo asincrono
+    # al fine di non rallentare la risposta all'utente
+    # NB: da tenere in considerazione per i test
+    # NB: in caso di crash del server, il log non verrà salvato
     background_tasks.add_task(
         services.save_inference_log_background,
         prediction_id = prediction_id,
