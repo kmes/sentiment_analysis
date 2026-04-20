@@ -1,0 +1,16 @@
+attrs==26.1.0
+certifi==2026.2.25
+charset-normalizer==3.4.7
+idna==3.11
+iniconfig==2.3.0
+jsonschema==4.26.0
+jsonschema-specifications==2025.9.1
+packaging==26.1
+pluggy==1.6.0
+Pygments==2.20.0
+pytest==9.0.3
+referencing==0.37.0
+requests==2.33.1
+rpds-py==0.30.0
+typing_extensions==4.15.0
+urllib3==2.6.3
