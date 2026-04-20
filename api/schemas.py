@@ -61,20 +61,14 @@ class ModelPredictData(BaseModel):
 class ModelPredictResponse(BaseResponse):
     prediction_id: uuid.UUID
     model_load_id: uuid.UUID
-    text: str
-    label: str
-    score: float
-    prediction_time: int
+    input_text: str
+    predicted_label: str
+    confidence: float
+    latency_ms: int
 
 
 class ModelFeedbackData(BaseModel):
-    prediction_id: uuid.UUID
     label: str
-
-    @field_validator('prediction_id')
-    @classmethod
-    def prediction_id_validator(cls, prediction_id: uuid.UUID) -> uuid.UUID:
-        return prediction_id
 
     @field_validator('label')
     @classmethod
@@ -109,6 +103,8 @@ class PredictionItem(BaseModel):
 
     model_config = {"from_attributes": True}
 
+class PredictionItemResponse(BaseResponse):
+    prediction: PredictionItem
 
 class PredictionsListResponse(BaseListResponse):
     predictions: list[PredictionItem]

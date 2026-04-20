@@ -2,23 +2,29 @@ import requests
 from jsonschema import validate, ValidationError, FormatChecker
 
 class TestEndpoint:
-    def __init__(self, url: str, method: str, status_code: int, json_schema: dict | None = None):
+    def __init__(self, url: str, method: str):
         self._url = url
         self._method = method
-        self._status_code = status_code
-        self._json_schema = json_schema
         self._response = None
 
-    def call_endpoint(self):
-        self._response = requests.request(self._method, self._url)
+    def get_response(self):
+        return self._response
+
+    def call_endpoint(self, data: dict | None = None, params: dict | None = None):
+        self._response = requests.request(
+            method=self._method, 
+            url=self._url, 
+            params=params,
+            json=data
+        )
         return self
 
-    def validate_status_code(self):
-        assert self._response.status_code == self._status_code, f"Expected status code {self._status_code}, got {self._response.status_code}"
+    def validate_status_code(self, status_code: int = 200):
+        assert self._response.status_code == status_code, f"Expected status code {status_code}, got {self._response.status_code}"
         return self
 
-    def validate_response_json(self):
-        if self._json_schema is None or self._json_schema == {}:
+    def validate_response_json(self, json_schema: dict | None = None):
+        if json_schema is None or json_schema == {}:
             return self
 
         json_data = self._response.json()
@@ -26,13 +32,15 @@ class TestEndpoint:
         assert isinstance(json_data, dict), f"Expected response JSON to be a dictionary, got {type(json_data)}"
 
         try:
-            validate(instance=json_data, schema=self._json_schema, format_checker=FormatChecker())
+            validate(instance=json_data, schema=json_schema, format_checker=FormatChecker())
         except ValidationError as e:
             raise AssertionError(f"JSON validation failed: {e}")
 
-    def test(self):
-        print(f"\n# Testing API status on {self._method} {self._url}...\n")
+    def test(self, data: dict | None = None, params: dict | None = None, status_code: int = 200, json_schema: dict | None = None):
+        print(f"# Calling API on {self._method} {self._url}...")
 
-        self.call_endpoint()
-        self.validate_status_code()
-        self.validate_response_json()
+        self.call_endpoint(data=data, params=params)
+        self.validate_status_code(status_code=status_code)
+        self.validate_response_json(json_schema=json_schema)
+
+        return self

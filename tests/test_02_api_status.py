@@ -6,9 +6,10 @@ API_PORT = os.getenv("API_PORT", "8000")
 BASE_URL = f"http://localhost:{API_PORT}"
 
 def test_api_status():
-    api_status_up(model_loaded=False)
+    api_status_up()
     
 def test_api_model_load():
+    api_unload_model()
     api_load_model(already_loaded=False)
 
 def test_api_model_load_already_loaded():
