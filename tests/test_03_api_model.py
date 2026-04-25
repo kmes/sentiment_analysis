@@ -18,6 +18,8 @@ def test_api_model_predict_feedback():
 
     api_model_get_prediction(prediction_id, with_feedback=True)
 
+def _ttest_api_model_predict_feedback():
+    api_model_predict()
 
 
     
