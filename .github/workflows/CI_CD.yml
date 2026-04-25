@@ -39,12 +39,12 @@ jobs:
       #     path: api/${{ env.HF_MODEL_SAVE_PATH }}
       #     key: hf-model-${{ steps.hf_digest.outputs.digest }}
 
-      # - name: Download model if not cached
-      #   if: steps.cache_model.outputs.cache-hit != 'true'
-      #   working-directory: api
-      #   run: |
-      #     pip install transformers torch accelerate
-      #     python download_mlmodel.py
+      #- name: Download model if not cached
+      #  if: steps.cache_model.outputs.cache-hit != 'true'
+      #  working-directory: api
+      #  run: |
+      #    pip install transformers torch accelerate
+      #    python download_mlmodel.py
 
       - name: Build & start containers
         run: docker compose --env-file .env.ci up -d --build
