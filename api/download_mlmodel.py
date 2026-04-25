@@ -2,8 +2,8 @@ import os
 import sys
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
-model_name = "cardiffnlp/twitter-roberta-base-sentiment-latest"
-save_path = "./ml_models/twitter-roberta-sentiment"
+model_name = os.getenv("HF_MODEL_NAME")
+save_path = os.getenv("HF_MODEL_SAVE_PATH")
 
 print(f"[1/4] Avvio download di: {model_name}", flush=True)
 
