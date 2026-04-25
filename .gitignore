@@ -7,3 +7,6 @@ __pycache__
 .Python
 .vscode
 ml_models/
+
+CICD_MLOPS_BEST_PRACTICES.md
+MLOPS_HF_BEST_PRACTICES.md

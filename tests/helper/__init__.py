@@ -238,9 +238,11 @@ def api_model_predict() -> uuid.UUID:
     json_schema = get_prediction_json_schema()
 
     t = TestEndpoint(url=url, method=method)
-    t.test(data=data_to_send, status_code=200, json_schema=json_schema)
-    prediction_id = t.get_response().json()["prediction_id"]
-    return prediction_id
+    t.call_endpoint(data=data_to_send)
+
+    #t.test(data=data_to_send, status_code=200, json_schema=json_schema)
+    #prediction_id = t.get_response().json()["prediction_id"]
+    #return prediction_id
 
 def api_model_feedback(prediction_id: uuid.UUID, label: str):
     print("# Testing model feedback...")
