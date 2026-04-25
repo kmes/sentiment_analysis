@@ -25,27 +25,6 @@ jobs:
           cache: 'pip'
           cache-dependency-path: tests/requirements.txt
 
-      - name: Get HuggingFace model digest
-        id: hf_digest
-        run: |
-          DIGEST=$(curl -sL "https://huggingface.co/api/models/${{ env.HF_MODEL_NAME }}" \
-            | python3 -c "import sys,json; data=json.load(sys.stdin); print(data['sha'])")
-          echo "digest=$DIGEST" >> $GITHUB_OUTPUT
-
-      - name: Cache ML model
-        id: cache_model
-        uses: actions/cache@v4
-        with:
-          path: api/${{ env.HF_MODEL_SAVE_PATH }}
-          key: hf-model-${{ steps.hf_digest.outputs.digest }}
-
-      - name: Download model if not cached
-        if: steps.cache_model.outputs.cache-hit != 'true'
-        working-directory: api
-        run: |
-          pip install transformers torch accelerate
-          python download_mlmodel.py
-
       - name: Build & start containers
         run: docker compose --env-file .env.ci up -d --build
 
