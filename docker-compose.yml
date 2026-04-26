@@ -42,6 +42,16 @@ services:
     volumes:
       - ./api:/app  # hot reload in sviluppo
 
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    depends_on:
+      - api
+
   grafana:
     image: grafana/grafana-enterprise
     container_name: grafana
@@ -55,7 +65,10 @@ services:
       - GF_INSTALL_PLUGINS=yesoreyeram-infinity-datasource
       - GF_AUTH_DISABLE_SIGN_UP=true
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    depends_on:
+      - prometheus
 
 volumes:
   postgres_data:
   grafana_storage:
+  prometheus_data:

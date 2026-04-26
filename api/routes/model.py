@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, BackgroundTasks, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from dependencies import analyzer, timer
+from dependencies import analyzer, timer, prediction_latency_ms, predictions_total
 from middlewares import check_model_loaded
 from schemas import BaseResponse, ModelLabelsResponse, ModelPredictData, ModelPredictResponse, ModelFeedbackData, ModelFeedbackResponse, PredictionItemResponse
 
@@ -65,6 +65,9 @@ def model_predict(data: ModelPredictData, background_tasks: BackgroundTasks):
         confidence = score,
         latency_ms = prediction_time,
     )
+
+    prediction_latency_ms.observe(prediction_time)
+    predictions_total.labels(predicted_label=label).inc()
 
     return ModelPredictResponse(
         status = "predicted",

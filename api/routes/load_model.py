@@ -1,6 +1,6 @@
 from fastapi import APIRouter, BackgroundTasks, Depends, Query
 
-from dependencies import analyzer, timer
+from dependencies import analyzer, timer, model_load_time_ms, model_loaded
 from schemas import BaseResponse, LoadModelResponse
 from db import services
 
@@ -29,6 +29,9 @@ def load_model(background_tasks: BackgroundTasks):
             load_time_ms = load_time
         )
 
+        model_load_time_ms.observe(load_time)
+        model_loaded.set(1)
+
         return LoadModelResponse(
             status = "model " + ("" if analyzer.model_loaded() else "not ") + "loaded",
             model = analyzer.get_model_info(),
@@ -45,6 +48,8 @@ def unload_model():
         timer.reset_timer()
         analyzer.unload_model()
         unload_time = timer.partial_timer()
+
+        model_loaded.set(0)
 
         return LoadModelResponse(
             status = "model " + ("" if analyzer.model_loaded() else "not ") + "loaded",
