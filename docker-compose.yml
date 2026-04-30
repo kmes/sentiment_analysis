@@ -34,6 +34,7 @@ services:
       HF_MODEL_NAME: ${HF_MODEL_NAME}
       HF_MODEL_SAVE_PATH: ${HF_MODEL_SAVE_PATH}
       HF_MODEL_VERSION: ${HF_MODEL_VERSION}
+      HF_MODEL_REVISION: ${HF_MODEL_REVISION}
     ports:
       - "${API_PORT:-8000}:8000"
     depends_on:
