@@ -1,7 +1,7 @@
 from fastapi import Query
 from pydantic import BaseModel, field_validator, ValidationError
 from datetime import datetime
-from typing import Optional, TypeVar, Generic
+from typing import Optional, TypeVar, Generic, List
 
 from dependencies import analyzer
 
@@ -116,6 +116,58 @@ class ModelLoadLogItem(BaseModel):
     model_name: str
     model_version: str
     load_time_ms: int
+
+    model_config = {"from_attributes": True}
+
+
+class FeedbackExportRecord(BaseModel):
+    prediction_id: uuid.UUID
+    input_text: str
+    predicted_label: str
+    confidence: float
+    true_label: str
+    predicted_at: datetime
+    feedback_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class FeedbackExportResponse(BaseModel):
+    model_version: str
+    exported_at: datetime
+    date_from_requested: Optional[datetime]
+    date_from_effective: Optional[datetime]
+    date_to_requested: Optional[datetime]
+    date_to_effective: Optional[datetime]
+    total_records: int
+    limit_applied: Optional[int]
+    records: List[FeedbackExportRecord]
+
+
+class ModelMetricsPayload(BaseModel):
+    model_version: str
+    eval_dataset: str
+    accuracy: float
+    f1_macro: float
+    f1_negative: float
+    f1_neutral: float
+    f1_positive: float
+    eval_loss: float
+    num_samples: int
+
+
+class ModelMetricsResponse(BaseModel):
+    id: int
+    model_version: str
+    eval_dataset: str
+    accuracy: float
+    f1_macro: float
+    f1_negative: float
+    f1_neutral: float
+    f1_positive: float
+    eval_loss: float
+    num_samples: int
+    timestamp: datetime
 
     model_config = {"from_attributes": True}
 

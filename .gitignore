@@ -7,6 +7,6 @@ __pycache__
 .Python
 .vscode
 ml_models/
-ml_workspace/
+ml_workspace/datasets/*
 
 *.md

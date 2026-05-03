@@ -76,3 +76,21 @@ class ModelLoadLog(Base):
         Index("idx_model_load_timestamp", "timestamp"),
         Index("idx_model_load_id", "model_load_id")
     )
+
+
+class ModelEvaluationLog(Base):
+    __tablename__ = "model_evaluation_logs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    model_version: Mapped[str] = mapped_column(String(50), nullable=False)
+    eval_dataset: Mapped[str] = mapped_column(String(255), nullable=False)
+    accuracy: Mapped[float] = mapped_column(Float, nullable=False)
+    f1_macro: Mapped[float] = mapped_column(Float, nullable=False)
+    f1_negative: Mapped[float] = mapped_column(Float, nullable=False)
+    f1_neutral: Mapped[float] = mapped_column(Float, nullable=False)
+    f1_positive: Mapped[float] = mapped_column(Float, nullable=False)
+    eval_loss: Mapped[float] = mapped_column(Float, nullable=False)
+    num_samples: Mapped[int] = mapped_column(Integer, nullable=False)
+    timestamp: Mapped[DateTime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )

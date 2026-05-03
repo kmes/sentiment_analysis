@@ -39,3 +39,32 @@ model_loaded = Gauge(
     "model_loaded",
     "Indicates if the model is currently loaded (1 = yes, 0 = no)"
 )
+
+prediction_text_length = Histogram(
+    "prediction_text_length_chars",
+    "Lunghezza in caratteri del testo di input alle predizioni",
+    buckets=[10, 25, 50, 100, 200, 500, 1000, 2000]
+)
+
+prediction_confidence = Histogram(
+    "prediction_confidence",
+    "Confidence score delle predizioni",
+    buckets=[0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 0.99, 1.0]
+)
+
+feedback_disagreement_rate = Gauge(
+    "feedback_disagreement_rate",
+    "Percentuale feedback con true_label != predicted_label (finestra rolling)"
+)
+
+feedback_total = Counter(
+    "feedback_total",
+    "Contatore feedback ricevuti per true_label",
+    ["true_label"]
+)
+
+model_accuracy = Gauge("model_accuracy", "Accuracy ultima valutazione", ["model_version"])
+model_f1_macro = Gauge("model_f1_macro", "F1 macro ultima valutazione", ["model_version"])
+model_f1_per_label = Gauge(
+    "model_f1_per_label", "F1 per label ultima valutazione", ["label", "model_version"]
+)
