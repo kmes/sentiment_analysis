@@ -15,7 +15,7 @@ app = typer.Typer()
 
 API_URL = os.getenv("SENTIMENT_API_URL", "http://localhost:8000")
 FEEDBACK_EXPORT_ENDPOINT = os.getenv("FEEDBACK_EXPORT_ENDPOINT", "/model/feedback-export")
-STAGED_SET_DIR = os.getenv("STAGED_SET_DIR", "datasets/staged")
+BRONZE_SET_DIR = os.getenv("BRONZE_SET_DIR", "datasets/raw")
 
 @app.command()
 def export(
@@ -24,7 +24,7 @@ def export(
     date_to: Optional[str] = typer.Option(None, "--date-to", help="Data fine ISO 8601"),
     limit: Optional[int] = typer.Option(None, "--limit", help="Numero massimo di record"),
     output_dir: Path = typer.Option(
-        Path(STAGED_SET_DIR), "--output-dir", help="Directory di output"
+        Path(BRONZE_SET_DIR), "--output-dir", help="Directory di output"
     ),
 ):
     params = {"model_version": model_version}
