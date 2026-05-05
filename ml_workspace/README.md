@@ -34,7 +34,7 @@ ml_workspace/
 ├── evaluate.py             # Step 4: valuta il candidate model
 ├── push_model.py           # Step 6: pubblica il modello su Hugging Face
 ├── tests/                  # Test unitari
-├── model/                  # Clone git del modello base (non modificare)
+├── model/                  # [submodule] Clone del modello base frasem/sentiment-analysis-roberta
 ├── runs/                   # Output del fine-tuning (creato automaticamente)
 │   └── <candidate_version>/
 │       ├── model.safetensors
@@ -47,20 +47,54 @@ ml_workspace/
     ├── raw/                # Bronze: feedback esportati dall'API (JSONL + manifest)
     ├── silver/             # Silver: dati filtrati (cura del data scientist)
     ├── fine-tuning/        # Gold: dataset validato per il training
-    └── sentiment/          # Eval set ufficiale (Parquet, non modificare)
+    └── sentiment-dataset/  # [submodule] Eval set ufficiale TweetEval (Parquet, non modificare)
 ```
+
+> **Nota sui submodule**: `model/` e `datasets/sentiment-dataset/` sono git submodule. Dopo un clone del repo vanno inizializzati esplicitamente (vedi Setup iniziale).
 
 ---
 
 ## Setup iniziale
 
-### 1. Posizionarsi nella cartella
+### 1. Creare il file `.env`
+
+Copiare il template e compilare le variabili necessarie:
+
+```bash
+cp ml_workspace/.env_sample ml_workspace/.env
+```
+
+Aprire `.env` e impostare almeno `HF_TOKEN` (obbligatorio per lo Step 6 — Push su Hugging Face):
+
+```dotenv
+HF_TOKEN=hf_xxxxxxxxxxxxxxxxxxxx
+```
+
+Le altre variabili hanno valori di default funzionanti; modificarle solo se si usa un repo o una configurazione diversa da quella standard.
+
+---
+
+### 2. Inizializzare i submodule git
+
+Dopo aver clonato il repo principale, i submodule `model/` e `datasets/sentiment-dataset/` sono vuoti. Inizializzarli dalla root del progetto (`sentiment_analysis/`):
+
+```bash
+git submodule update --init --recursive
+```
+
+Se è il primo clone del progetto, si può includere direttamente:
+
+```bash
+git clone --recurse-submodules <repo-url>
+```
+
+### 3. Posizionarsi nella cartella
 
 ```bash
 cd ml_workspace
 ```
 
-### 2. Attivare il virtual environment (o crearlo se non esiste)
+### 4. Attivare il virtual environment (o crearlo se non esiste)
 
 ```bash
 # Se il venv esiste già
@@ -72,7 +106,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 3. Configurare le variabili d'ambiente
+### 5. Configurare le variabili d'ambiente
 
 Il file `.env` viene caricato automaticamente da tutti gli script. Verificare che le variabili principali siano corrette:
 
@@ -285,7 +319,18 @@ python push_model.py v1.1.0 \
   --create-tag
 ```
 
-Lo script verifica che `HF_TOKEN` sia presente e che `config.json` esista nella model-dir, poi carica i file e crea il tag. Al termine stampa l'URL del commit e del tag su HF.
+**Cosa viene pushato e dove:**
+
+- **Sorgente**: la cartella `runs/v1.1.0-rc1/` — i pesi prodotti da `fine_tune.py`, non il clone in `model/`. La cartella `model/` non viene mai toccata da questo script: serve solo come base per il training.
+- **Destinazione**: il repo HuggingFace definito da `HF_REPO_ID` nel `.env` (default: `frasem/sentiment-analysis-roberta`).
+
+Lo script esegue questi passi in sequenza:
+
+1. Verifica che `HF_TOKEN` sia presente — senza token l'operazione fallisce subito.
+2. Controlla che `runs/v1.1.0-rc1/config.json` esista (guard contro push di cartelle vuote o errate).
+3. Carica l'intera cartella sul repo HF come singolo commit (`upload_folder`).
+4. Con `--create-tag`: crea il tag `v1.1.0` nel repo HF — è questo tag che l'API userà per scaricare la versione corretta tramite `HF_MODEL_REVISION`.
+5. Stampa l'URL del commit e del tag, e ricorda di aggiornare `HF_MODEL_REVISION` nel `.env` del progetto.
 
 ---
 
