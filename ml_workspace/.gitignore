@@ -2,8 +2,3 @@ __pycache__/
 .venv/
 *.pyc
 .env
-model/*
-datasets/raw/*
-datasets/silver/*
-datasets/fine-tuning/*
-datasets/sentiment-dataset/*
