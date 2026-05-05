@@ -7,6 +7,8 @@ __pycache__
 .Python
 .vscode
 ml_models/
-ml_workspace/datasets/*
 
-*.md
+MLOPS_PLAN.md
+monitoring_implementation_plan.md
+piano_implementazione_finetuning_v2.md
+spec.md
