@@ -257,7 +257,7 @@ runs/v1.1.0-rc1/
 
 ### Step 4 — Valutazione
 
-Valuta il candidate model sull'eval set Parquet ufficiale (`datasets/sentiment/`) e invia le metriche all'API (vengono salvate nel DB e aggiornano la dashboard Grafana).
+Valuta il candidate model sull'eval set Parquet ufficiale (`datasets/sentiment-dataset/`) e invia le metriche all'API (vengono salvate nel DB e aggiornano la dashboard Grafana).
 
 ```bash
 python evaluate.py v1.1.0-rc1 \
