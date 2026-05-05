@@ -120,7 +120,7 @@ Le variabili rilevanti per il flusso di fine-tuning:
 |---|---|---|
 | `SENTIMENT_API_URL` | `http://localhost:8000` | Sempre |
 | `GOLDEN_SET_DIR` | `datasets/fine-tuning` | Step 3 |
-| `EVAL_SET_PATH` | `datasets/sentiment/test-00000-of-00001.parquet` | Step 4 |
+| `EVAL_SET_PATH` | `datasets/sentiment-dataset/sentiment/test-00000-of-00001.parquet` | Step 4 |
 | `HF_BASE_MODEL` | `frasem/sentiment-analysis-roberta` | Step 3 |
 | `HF_REPO_ID` | `frasem/sentiment-analysis-roberta` | Step 6 |
 | `HF_TOKEN` | _(vuoto)_ | Step 6 — impostare prima del push |
@@ -371,7 +371,7 @@ Tutte le variabili sono in `.env` e vengono caricate automaticamente da ogni scr
 | `BRONZE_SET_DIR` | `datasets/raw` | Output di `export_feedback.py` |
 | `SILVER_SET_DIR` | `datasets/silver` | Dataset silver (uso manuale) |
 | `GOLDEN_SET_DIR` | `datasets/fine-tuning` | Gold dataset per il training |
-| `EVAL_SET_PATH` | `datasets/sentiment/test-00000-of-00001.parquet` | Eval set ufficiale |
+| `EVAL_SET_PATH` | `datasets/sentiment-dataset/sentiment/test-00000-of-00001.parquet` | Eval set ufficiale |
 | `MODEL_PATH` | `model` | Clone locale del modello base |
 | `HF_BASE_MODEL` | `frasem/sentiment-analysis-roberta` | Modello di partenza per il fine-tuning |
 | `HF_REPO_ID` | `frasem/sentiment-analysis-roberta` | Repo HF di destinazione per il push |
