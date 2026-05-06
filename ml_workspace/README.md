@@ -35,12 +35,7 @@ ml_workspace/
 ├── push_model.py           # Step 6: pubblica il modello su Hugging Face
 ├── tests/                  # Test unitari
 ├── model/                  # [submodule] Clone del modello base frasem/sentiment-analysis-roberta
-├── runs/                   # Output del fine-tuning (creato automaticamente)
-│   └── <candidate_version>/
-│       ├── model.safetensors
-│       ├── config.json
-│       ├── tokenizer.json
-│       └── training_summary.json
+├── runs/                   # Candidate models prodotti da fine_tune.py; push_model.py pubblica da qui su HF (model/ è il modello sorgente, non viene mai toccato)
 ├── artifacts/
 │   └── evaluations/        # Report JSON di valutazione (creato automaticamente)
 └── data/
@@ -48,10 +43,11 @@ ml_workspace/
     ├── silver/             # Silver: dati filtrati (cura del data scientist)
     ├── fine-tuning/        # Gold: dataset validato per il training
     ├── evaluate/           # Eval set Parquet usato da evaluate.py (data/evaluate/eval.parquet)
-    └── simulation/         # Dataset per simulate_traffic.py (sorgente + sample bilanciato)
+    ├── simulation/         # Dataset per simulate_traffic.py (sorgente + sample bilanciato)
+    └── sentiment-dataset/  # [submodule] frasem/sentiment-dataset — sorgente Parquet train/test/validation
 ```
 
-> **Nota sui submodule**: `model/` è git submodule. Dopo un clone del repo va inizializzato esplicitamente (vedi Setup iniziale).
+> **Nota sui submodule**: `model/` e `data/sentiment-dataset/` sono git submoduli. Dopo un clone del repo vanno inizializzati esplicitamente (vedi Setup iniziale).
 
 ---
 
@@ -77,7 +73,7 @@ Le altre variabili hanno valori di default funzionanti; modificarle solo se si u
 
 ### 2. Inizializzare i submodule git
 
-Dopo aver clonato il repo principale, il submodule `model/` è vuoto. Inizializzarlo dalla root del progetto (`sentiment_analysis/`):
+Dopo aver clonato il repo principale, i submoduli `model/` e `data/sentiment-dataset/` sono vuoti. Inizializzarli dalla root del progetto (`sentiment_analysis/`):
 
 ```bash
 git submodule update --init --recursive
@@ -239,20 +235,7 @@ python fine_tune.py v1.1.0-rc1 \
 
 Lo script stampa un report di caricamento dataset (record letti / validi / scartati), il numero di parametri allenabili e le metriche di validation interna alla fine di ogni epoca.
 
-**Output** in `runs/v1.1.0-rc1/`:
-
-```
-runs/v1.1.0-rc1/
-├── config.json
-├── model.safetensors
-├── tokenizer.json
-├── tokenizer_config.json
-├── special_tokens_map.json
-├── training_summary.json    ← riepilogo completo della sessione
-└── checkpoints/
-```
-
-> Il clone locale in `model/` non viene mai toccato o sovrascritto.
+**Output**: i pesi del modello fine-tunato vengono salvati in `runs/<candidate_version>/`. La cartella è creata automaticamente da `fine_tune.py`. Il clone locale in `model/` è il modello sorgente e non viene mai toccato o sovrascritto.
 
 ---
 
