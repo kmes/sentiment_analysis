@@ -7,8 +7,3 @@ __pycache__
 .Python
 .vscode
 ml_models/
-
-MLOPS_PLAN.md
-monitoring_implementation_plan.md
-piano_implementazione_finetuning_v2.md
-spec.md
