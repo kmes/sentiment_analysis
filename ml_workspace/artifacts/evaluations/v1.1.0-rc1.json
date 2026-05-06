@@ -1,0 +1,22 @@
+{
+  "candidate_version": "v1.1.0-rc1",
+  "model_dir": "/home/kmes/progetti/sentiment_analysis/ml_workspace/runs/v1.1.0-rc1",
+  "eval_dataset": "/home/kmes/progetti/sentiment_analysis/ml_workspace/data/evaluate/eval.parquet",
+  "metrics": {
+    "model_version": "v1.1.0-rc1",
+    "eval_dataset": "eval.parquet",
+    "accuracy": 0.6366366366366366,
+    "f1_macro": 0.6436373739779312,
+    "f1_negative": 0.6526315789473685,
+    "f1_neutral": 0.6018099547511312,
+    "f1_positive": 0.6764705882352942,
+    "eval_loss": 0.9436556345469004,
+    "num_samples": 999
+  },
+  "api_post": {
+    "sent": false,
+    "url": "http://localhost:8000/model/metrics",
+    "error": "[Errno 111] Connection refused"
+  },
+  "timestamp": "2026-05-06T13:29:20.872842+00:00"
+}

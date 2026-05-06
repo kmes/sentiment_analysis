@@ -1,8 +1,5 @@
-[submodule "ml_workspace/ml_workspace/datasets/sentiment-dataset"]
-	path = ml_workspace/ml_workspace/datasets/sentiment-dataset
-	url = https://huggingface.co/datasets/frasem/sentiment-dataset
-[submodule "ml_workspace/datasets/sentiment-dataset"]
-	path = ml_workspace/datasets/sentiment-dataset
+[submodule "ml_workspace/data/sentiment-dataset"]
+	path = ml_workspace/data/sentiment-dataset
 	url = https://huggingface.co/datasets/frasem/sentiment-dataset
 [submodule "ml_workspace/model"]
 	path = ml_workspace/model

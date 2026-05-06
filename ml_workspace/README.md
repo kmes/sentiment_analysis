@@ -43,14 +43,15 @@ ml_workspace/
 │       └── training_summary.json
 ├── artifacts/
 │   └── evaluations/        # Report JSON di valutazione (creato automaticamente)
-└── datasets/
+└── data/
     ├── raw/                # Bronze: feedback esportati dall'API (JSONL + manifest)
     ├── silver/             # Silver: dati filtrati (cura del data scientist)
     ├── fine-tuning/        # Gold: dataset validato per il training
-    └── sentiment-dataset/  # [submodule] Eval set ufficiale TweetEval (Parquet, non modificare)
+    ├── evaluate/           # Eval set Parquet usato da evaluate.py (data/evaluate/eval.parquet)
+    └── simulation/         # Dataset per simulate_traffic.py (sorgente + sample bilanciato)
 ```
 
-> **Nota sui submodule**: `model/` e `datasets/sentiment-dataset/` sono git submodule. Dopo un clone del repo vanno inizializzati esplicitamente (vedi Setup iniziale).
+> **Nota sui submodule**: `model/` è git submodule. Dopo un clone del repo va inizializzato esplicitamente (vedi Setup iniziale).
 
 ---
 
@@ -76,7 +77,7 @@ Le altre variabili hanno valori di default funzionanti; modificarle solo se si u
 
 ### 2. Inizializzare i submodule git
 
-Dopo aver clonato il repo principale, i submodule `model/` e `datasets/sentiment-dataset/` sono vuoti. Inizializzarli dalla root del progetto (`sentiment_analysis/`):
+Dopo aver clonato il repo principale, il submodule `model/` è vuoto. Inizializzarlo dalla root del progetto (`sentiment_analysis/`):
 
 ```bash
 git submodule update --init --recursive
@@ -119,8 +120,8 @@ Le variabili rilevanti per il flusso di fine-tuning:
 | Variabile | Default | Quando serve |
 |---|---|---|
 | `SENTIMENT_API_URL` | `http://localhost:8000` | Sempre |
-| `GOLDEN_SET_DIR` | `datasets/fine-tuning` | Step 3 |
-| `EVAL_SET_PATH` | `datasets/sentiment-dataset/sentiment/test-00000-of-00001.parquet` | Step 4 |
+| `GOLDEN_SET_DIR` | `data/fine-tuning` | Step 3 |
+| `EVAL_SET_PATH` | `data/evaluate/eval.parquet` | Step 4 |
 | `HF_BASE_MODEL` | `frasem/sentiment-analysis-roberta` | Step 3 |
 | `HF_REPO_ID` | `frasem/sentiment-analysis-roberta` | Step 6 |
 | `HF_TOKEN` | _(vuoto)_ | Step 6 — impostare prima del push |
@@ -189,10 +190,10 @@ python export_feedback.py v1.0.0 \
   --limit 500
 ```
 
-**Output** in `datasets/raw/`:
+**Output** in `data/raw/`:
 
 ```
-datasets/raw/
+data/raw/
 ├── feedback_v1.0.0_20260503T120000Z.jsonl
 └── manifest_v1.0.0_20260503T120000Z.json
 ```
@@ -209,7 +210,7 @@ Ogni riga del JSONL ha questa struttura (i campi `_` sono metadati di review, no
 
 > Questo step è manuale e di responsabilità del data scientist.
 
-Partendo dai file in `datasets/raw/`, rivedere i record e produrre il gold dataset validato in `datasets/fine-tuning/`. Il formato richiesto è JSONL con solo due campi:
+Partendo dai file in `data/raw/`, rivedere i record e produrre il gold dataset validato in `data/fine-tuning/`. Il formato richiesto è JSONL con solo due campi:
 
 ```json
 {"text": "Great product!", "label": "positive"}
@@ -228,7 +229,7 @@ Addestra la classification head del modello base sul gold dataset. Il backbone R
 
 ```bash
 python fine_tune.py v1.1.0-rc1 \
-  --train-path datasets/fine-tuning \
+  --train-path data/fine-tuning \
   --epochs 10 \
   --batch-size 16 \
   --learning-rate 1e-3 \
@@ -257,7 +258,7 @@ runs/v1.1.0-rc1/
 
 ### Step 4 — Valutazione
 
-Valuta il candidate model sull'eval set Parquet ufficiale (`datasets/sentiment-dataset/`) e invia le metriche all'API (vengono salvate nel DB e aggiornano la dashboard Grafana).
+Valuta il candidate model sull'eval set Parquet (`data/evaluate/eval.parquet`) e invia le metriche all'API (vengono salvate nel DB e aggiornano la dashboard Grafana).
 
 ```bash
 python evaluate.py v1.1.0-rc1 \
@@ -368,10 +369,10 @@ Tutte le variabili sono in `.env` e vengono caricate automaticamente da ogni scr
 |---|---|---|
 | `SENTIMENT_API_URL` | `http://localhost:8000` | URL base dell'API |
 | `FEEDBACK_EXPORT_ENDPOINT` | `/model/feedback-export` | Endpoint export feedback |
-| `BRONZE_SET_DIR` | `datasets/raw` | Output di `export_feedback.py` |
-| `SILVER_SET_DIR` | `datasets/silver` | Dataset silver (uso manuale) |
-| `GOLDEN_SET_DIR` | `datasets/fine-tuning` | Gold dataset per il training |
-| `EVAL_SET_PATH` | `datasets/sentiment-dataset/sentiment/test-00000-of-00001.parquet` | Eval set ufficiale |
+| `BRONZE_SET_DIR` | `data/raw` | Output di `export_feedback.py` |
+| `SILVER_SET_DIR` | `data/silver` | Dataset silver (uso manuale) |
+| `GOLDEN_SET_DIR` | `data/fine-tuning` | Gold dataset per il training |
+| `EVAL_SET_PATH` | `data/evaluate/eval.parquet` | Eval set per `evaluate.py` |
 | `MODEL_PATH` | `model` | Clone locale del modello base |
 | `HF_BASE_MODEL` | `frasem/sentiment-analysis-roberta` | Modello di partenza per il fine-tuning |
 | `HF_REPO_ID` | `frasem/sentiment-analysis-roberta` | Repo HF di destinazione per il push |

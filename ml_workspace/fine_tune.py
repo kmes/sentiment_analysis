@@ -76,7 +76,7 @@ def fine_tune(
     """Classifier-only fine-tuning del modello base sul gold dataset cumulativo."""
     _set_seed(seed)
 
-    train_path = train_path or Path(get_env("GOLDEN_SET_DIR", "datasets/fine-tuning"))
+    train_path = train_path or Path(get_env("GOLDEN_SET_DIR", "data/fine-tuning"))
     output_root = resolve_path(output_dir or Path(get_env("TRAIN_OUTPUT_DIR", "runs")))
     base_model = base_model or get_env("HF_BASE_MODEL", "frasem/sentiment-analysis-roberta")
 

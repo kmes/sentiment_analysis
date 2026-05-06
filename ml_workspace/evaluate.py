@@ -151,7 +151,7 @@ def evaluate(
     """Valuta un candidate model sull'eval set Parquet e (opzionalmente) invia le metriche all'API."""
     train_output_dir = Path(get_env("TRAIN_OUTPUT_DIR", "runs"))
     model_dir = resolve_path(model_dir or train_output_dir / candidate_version)
-    eval_set = resolve_path(eval_set or Path(get_env("EVAL_SET_PATH", "datasets/sentiment/test-00000-of-00001.parquet")))
+    eval_set = resolve_path(eval_set or Path(get_env("EVAL_SET_PATH", "data/evaluate/eval.parquet")))
     output_dir = resolve_path(output_dir or Path(get_env("EVAL_RESULTS_DIR", "artifacts/evaluations")))
 
     if not model_dir.exists():

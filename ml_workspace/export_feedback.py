@@ -15,7 +15,7 @@ app = typer.Typer()
 
 API_URL = os.getenv("SENTIMENT_API_URL", "http://localhost:8000")
 FEEDBACK_EXPORT_ENDPOINT = os.getenv("FEEDBACK_EXPORT_ENDPOINT", "/model/feedback-export")
-BRONZE_SET_DIR = os.getenv("BRONZE_SET_DIR", "datasets/raw")
+BRONZE_SET_DIR = os.getenv("BRONZE_SET_DIR", "data/raw")
 
 @app.command()
 def export(
